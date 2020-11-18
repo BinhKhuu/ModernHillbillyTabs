@@ -12,6 +12,15 @@ import HipsterTabs, { IHipsterTabsProps } from "./components/HipsterTabs";
 import { IHipsterTab } from "./components/IHipsterTab";
 import { IHipsterTabsWebPartProps } from "./IHipsterTabsWebPartProps";
 
+/*
+    Changes: v1.1
+        + new pane property spTabId, unique id for a canvas on the page
+        + update get zone to get unique canvas id as third prop
+        + update moveSection to use unquie canvas ID if sectionID fails
+
+*/
+
+
 export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTabsWebPartProps> {
 
   protected onInit(): Promise<void> {
@@ -22,8 +31,9 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
   }
 
   public render(): void {
+        
+        /* Code for mapping tabs to a unqiue canvas ID if property tabID is not there
         const zones = this.getZones();
-        /*
         if(this.properties.tabs.length){
             zones.forEach((zone) => {
                 var test = this.properties.tabs.some((tab,index)=>{
@@ -35,7 +45,6 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
             })
         }
         */
-       
 
     const element: React.ReactElement<IHipsterTabsProps > = React.createElement(
       HipsterTabs,
@@ -50,12 +59,10 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
           this.context.propertyPane.open();
         },
         tabs: this.properties.tabs,
-        zones: zones,
         showAsLinks: this.properties.showAsLinks,
         normalSize: this.properties.normalSize,
       }
     );
-      console.log(this.properties.tabs)
     ReactDom.render(element, this.domElement);
   }
 
@@ -65,18 +72,12 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
     
     for(let z = 0; z < zoneElements.length; z++) {
       // disqualify the zone containing this webpart
-      console.log('instancei', this.instanceId)
       if(!zoneElements[z].querySelector(`[data-instanceId="${this.instanceId}"]`)) {
-        
-
         const uniqueId = zoneElements[z].querySelector("[data-automation-id='CanvasControl']").id; //zoneElements[z].querySelector("[data-automation-id='CanvasZone'] [data-automation-id='CanvasControl']")[1].id
-
         const zoneId = zoneElements[z].dataset.spA11yId;
-
         const sectionCount = zoneElements[z].getElementsByClassName("CanvasSection").length;
         let zoneName:string = `${strings.PropertyPane_SectionName_Section} ${z+1} (${sectionCount} ${sectionCount==1 ? strings.PropertyPane_SectionName_Column : strings.PropertyPane_SectionName_Columns})`;
         zones.push([zoneId, zoneName,uniqueId]);
-
       }
     }
 
@@ -161,7 +162,6 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
                         required: true,
                         disableEdit:true,
                         onCustomRender: (field, value, onUpdate, item, itemId, onError) => {
-                            console.log(item,itemId,value)
                             this.getZones().map((zone:[string,string,string]) => {
                                 if(item.sectionId == zone[0]){
                                     value = zone[2];
