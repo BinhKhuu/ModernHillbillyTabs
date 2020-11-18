@@ -16,6 +16,7 @@ export interface IHipsterTabsProps {
   updateTitle: (title:string) => void;
   configure: () => void;
   tabs: Array<IHipsterTab>;
+  zones?: any;
   showAsLinks: boolean;
   normalSize: boolean;
 }
@@ -46,7 +47,6 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
         }
       });
     }
-
     return (
       <div className={ styles.hipsterTabs } data-instanceId={this.props.instanceId} ref={(container) => this._container = container!}>
         <WebPartTitle
@@ -62,7 +62,7 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
             onConfigure={this.props.configure} />
         }
         {this.props.tabs !== undefined && this.props.tabs.length > 0 &&
-          <div>
+          <div className="bbtest3">
             <Pivot
               selectedKey={this.state.selectedTab}
               headersOnly={true}
@@ -70,10 +70,12 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
               onLinkClick={this.onTabClick}
               linkFormat={this.props.showAsLinks ? PivotLinkFormat.links : PivotLinkFormat.tabs}
               linkSize={this.props.normalSize ? PivotLinkSize.normal : PivotLinkSize.large}>
-              {tabNames.map((tabName:string) => {
+                  className={"bbtest2"}
+              {tabNames.map((tabName:string) => {             
                 return (
-                  <PivotItem linkText={tabName} itemKey={tabName}>
                     
+                  <PivotItem className="bbtest" linkText={tabName} itemKey={tabName}>
+
                   </PivotItem>
                 );
               })}
@@ -83,6 +85,7 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
                 <div
                   data-htTabName={tab.name}
                   data-htSectionId={tab.sectionId}
+                  data-uniqueId={tab.uniqueId}
                   className={tab.name == this.state.selectedTab ? "" : styles.hidden}
                   aria-labelledby={this.getTabId(tab.name)}/>
               );
@@ -131,9 +134,14 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
 
   private moveSections(): void {
     this._parents = new Map<string,Element>();
+
     this.props.tabs.forEach((tab:IHipsterTab) => {
-      const source = document.querySelector(`[data-sp-a11y-id="${tab.sectionId}"]`);
+      const source = document.querySelector(`[data-sp-a11y-id="${tab.sectionId}"]`) ? 
+        document.querySelector(`[data-sp-a11y-id="${tab.sectionId}"]`) :
+        document.getElementById(tab.spTabId).closest('.CanvasZone')
+      console.log("src",source);
       const dest = this._container.querySelector(`[data-htSectionId="${tab.sectionId}"]`);
+      console.log("dest",dest);
       if (source && dest) {
         this._parents.set(tab.sectionId, source.parentElement);
         dest.appendChild(source);

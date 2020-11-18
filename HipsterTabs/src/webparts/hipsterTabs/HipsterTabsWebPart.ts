@@ -16,11 +16,27 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
 
   protected onInit(): Promise<void> {
     //this.properties.tabModel = hipsterTabsToModel(this.properties.tabs, this.getZones());
-
+    //var page = this.context.pageContext.legacyPageContext;
+    //window["_spPageContextInfo"] = page;
     return super.onInit();
   }
 
   public render(): void {
+        const zones = this.getZones();
+        /*
+        if(this.properties.tabs.length){
+            zones.forEach((zone) => {
+                var test = this.properties.tabs.some((tab,index)=>{
+                    if( this.properties.tabs[index]["sectionId"] == zone[0]){
+                        this.properties.tabs[index]["uniqueId"] = zone[2];
+                        return true;
+                    }         
+                })
+            })
+        }
+        */
+       
+
     const element: React.ReactElement<IHipsterTabsProps > = React.createElement(
       HipsterTabs,
       {
@@ -34,25 +50,33 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
           this.context.propertyPane.open();
         },
         tabs: this.properties.tabs,
+        zones: zones,
         showAsLinks: this.properties.showAsLinks,
         normalSize: this.properties.normalSize,
       }
     );
-
+      console.log(this.properties.tabs)
     ReactDom.render(element, this.domElement);
   }
 
-  private getZones(): Array<[string,string]> {
-    const zones = new Array<[string,string]>();
-
-    const zoneElements:NodeListOf<HTMLElement> = <NodeListOf<HTMLElement>>document.querySelectorAll(".CanvasZoneContainer > .CanvasZone");
+  private getZones(): Array<[string,string,string]> {
+    const zones = new Array<[string,string,string]>();
+    const zoneElements:NodeListOf<HTMLElement> = document.querySelectorAll(".CanvasZoneContainer > .CanvasZone").length > 0 ? <NodeListOf<HTMLElement>>document.querySelectorAll(".CanvasZoneContainer > .CanvasZone"):<NodeListOf<HTMLElement>>document.querySelectorAll("[data-automation-id='CanvasZone']");
+    
     for(let z = 0; z < zoneElements.length; z++) {
       // disqualify the zone containing this webpart
+      console.log('instancei', this.instanceId)
       if(!zoneElements[z].querySelector(`[data-instanceId="${this.instanceId}"]`)) {
+        
+
+        const uniqueId = zoneElements[z].querySelector("[data-automation-id='CanvasControl']").id; //zoneElements[z].querySelector("[data-automation-id='CanvasZone'] [data-automation-id='CanvasControl']")[1].id
+
         const zoneId = zoneElements[z].dataset.spA11yId;
+
         const sectionCount = zoneElements[z].getElementsByClassName("CanvasSection").length;
         let zoneName:string = `${strings.PropertyPane_SectionName_Section} ${z+1} (${sectionCount} ${sectionCount==1 ? strings.PropertyPane_SectionName_Column : strings.PropertyPane_SectionName_Columns})`;
-        zones.push([zoneId, zoneName]);
+        zones.push([zoneId, zoneName,uniqueId]);
+
       }
     }
 
@@ -95,6 +119,8 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
     }
   }
 
+
+
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [
@@ -121,12 +147,40 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
                       title: strings.PropertyPane_TabsField_Section,
                       type: CustomCollectionFieldType.dropdown,
                       required: true,
-                      options: this.getZones().map((zone:[string,string]) => {
+                      options: this.getZones().map((zone:[string,string,string]) => {
                         return {
                           key: zone["0"],
-                          text: zone["1"],
+                          text: zone["1"],                     
                         };
                       }),
+                    },
+                    {
+                        id: "spTabId",
+                        title: "tabId",
+                        type: CustomCollectionFieldType.custom,
+                        required: true,
+                        disableEdit:true,
+                        onCustomRender: (field, value, onUpdate, item, itemId, onError) => {
+                            console.log(item,itemId,value)
+                            this.getZones().map((zone:[string,string,string]) => {
+                                if(item.sectionId == zone[0]){
+                                    value = zone[2];
+                                    item.spTabId = zone[2];
+                                }
+                            })
+                            return (
+                              React.createElement("div", null,
+                                React.createElement("input", { disabled: true, key: value, value: value, onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                                  onUpdate(field.id, event.currentTarget.value);
+                                  if (event.currentTarget.value === "error") {
+                                    onError(field.id, "Value shouldn't be equal to error");
+                                  } else {
+                                    onError(field.id, "");
+                                  }
+                                }}), " 🎉"
+                              )
+                            );
+                        }
                     },
                   ],
                 }),

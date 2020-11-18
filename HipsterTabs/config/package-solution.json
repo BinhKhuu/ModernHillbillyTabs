@@ -3,7 +3,7 @@
   "solution": {
     "name": "Hipster Tabs",
     "id": "d1b56760-191d-4d95-bc04-ad71cd220e95",
-    "version": "1.0.0.0",
+    "version": "1.0.0.1",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "iconPath": "AppIcon.png"
