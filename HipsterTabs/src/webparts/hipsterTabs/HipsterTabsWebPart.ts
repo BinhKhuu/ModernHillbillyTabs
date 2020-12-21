@@ -177,7 +177,7 @@ export default class HipsterTabsWebPart extends BaseClientSideWebPart<IHipsterTa
                                   } else {
                                     onError(field.id, "");
                                   }
-                                }}), " 🎉"
+                                }}),
                               )
                             );
                         }

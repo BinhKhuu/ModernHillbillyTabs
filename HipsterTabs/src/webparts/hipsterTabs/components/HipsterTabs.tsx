@@ -31,10 +31,20 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
 
   public constructor(props:IHipsterTabsProps) {
     super(props);
-
+    var url = new URL(window.location.href)
+    var tabName = this.getSelectedTabName(props)
     this.state = {
-      selectedTab: props.tabs !== undefined && props.tabs.length > 0 ? props.tabs[0].name : undefined,
+      //selectedTab: props.tabs !== undefined && props.tabs.length > 0 ? props.tabs[0].name : selectedTabName,
+      selectedTab: tabName
     };
+  }
+
+  private getSelectedTabName(props){
+    var url = new URL(window.location.href)
+    var selectedTabName = url.searchParams.get("selectedTabName") || "";
+    var defaultTabName = props.tabs !== undefined && props.tabs.length > 0 ? props.tabs[0].name : undefined;
+
+    return selectedTabName ? selectedTabName : defaultTabName
   }
 
   public render(): React.ReactElement<IHipsterTabsProps> {   
@@ -77,7 +87,8 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
 
                   </PivotItem>
                 );
-              })}
+              })
+              }
             </Pivot>
             {this.props.tabs.map((tab:IHipsterTab) => {
               return (
@@ -108,9 +119,16 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
     if (this.props.displayMode !== newProps.displayMode && newProps.displayMode == DisplayMode.Read) {
       // Ensure our selected state still matches what's available in the tabs
       if (newProps.tabs !== undefined && newProps.tabs.length > 0) {
+        var tabName = this.getSelectedTabName(newProps)
+
+        this.state = {
+          //selectedTab: props.tabs !== undefined && props.tabs.length > 0 ? props.tabs[0].name : selectedTabName,
+          selectedTab: tabName
+        };
+
         if (this.state.selectedTab !== newProps.tabs[0].name) {
           this.setState({
-            selectedTab: newProps.tabs[0].name,
+            selectedTab: tabName,
           });
         }
       } else {
@@ -163,6 +181,7 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
   @autobind
   private onTabClick(item:PivotItem): void {
     this.setState({
+        
       selectedTab: item.props.itemKey,
     });
   }
