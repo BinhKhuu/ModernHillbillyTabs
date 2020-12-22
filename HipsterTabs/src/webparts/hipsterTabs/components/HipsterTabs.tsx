@@ -41,9 +41,8 @@ export default class HipsterTabs extends React.Component<IHipsterTabsProps, IHip
 
   private getSelectedTabName(props){
     var url = new URL(window.location.href)
-    var selectedTabName = url.searchParams.get("selectedTabName") || "";
+    var selectedTabName = url.searchParams.get("SelectedTabName") || "";
     var defaultTabName = props.tabs !== undefined && props.tabs.length > 0 ? props.tabs[0].name : undefined;
-
     return selectedTabName ? selectedTabName : defaultTabName
   }
 
